@@ -30,6 +30,7 @@ import org.hibernate.service.ServiceRegistry;
 import org.example.Patient;
 import org.example.Doctor;
 import org.example.Department;
+import org.example.Appointment;
 
 public class App {
     private static Session session;
@@ -85,22 +86,24 @@ public class App {
         Patient Daniel = new Patient(96, "Daniel", "Glazeman", LocalDateTime.of(2022,
                 Month.JULY, 1, 2, 20, 50), C);
 
-//        Shahar.addDoctors(Oren, Stav, Toto);
 
         session.save(Shahar);
-//
-//        Noy.addDoctors(Sima, Yakov, Moti);
         session.save(Noy);
-//
-//        Daniel.addDoctors(Oren, Yakov, Moti);
         session.save(Daniel);
 
-        Appointment F = new Appointment(LocalDateTime.of(2020, Month.JULY, 1, 2, 20, 50), "cancer", Oren, Shahar);
-        Appointment G = new Appointment(LocalDateTime.of(2021, Month.JULY, 1, 2, 20, 50), "aids", Stav, Shahar);
-        Appointment H = new Appointment(LocalDateTime.of(2022, Month.JULY, 1, 2, 20, 50), "fuckthis", Toto, Shahar);
-        session.save(F);
-        session.save(G);
-        session.save(H);
+
+        session.flush();
+        Shahar.addAppointment((LocalDateTime.of(2020, Month.JULY, 1, 2, 20, 50)), "Flue", Oren);
+        Oren.addAppointment((LocalDateTime.of(2020, Month.JULY, 1, 2, 20, 50)), "Stomach", Noy);
+        session.save(Oren);
+        session.save(Shahar);
+
+//        Appointment F = new Appointment(LocalDateTime.of(2020, Month.JULY, 1, 2, 20, 50), "broken arm", Oren, Shahar);
+//        Appointment G = new Appointment(LocalDateTime.of(2021, Month.JULY, 1, 2, 20, 50), "surgery", Stav, Shahar);
+//        Appointment H = new Appointment(LocalDateTime.of(2022, Month.JULY, 1, 2, 20, 50), "blood test", Toto, Shahar);
+//        session.save(H);
+//        session.save(G);
+//        session.save(F);
 
         session.getTransaction().commit();
     }
@@ -126,6 +129,7 @@ public class App {
 
             initializeData();
 
+            List<Appointment> a = getAll(Appointment.class);
 
             String hql = "FROM Patient f ORDER BY patientNumber";
             Query query = session.createQuery(hql);
