@@ -30,16 +30,7 @@ public class Patient {
 
 
     @OneToMany(mappedBy = "patient")
-    private List<Appointment> appointments;
-
-//
-//    public void addDoctors(Doctor... doctors) {
-//        for (Doctor doctor : doctors) {
-//            doctorList.add(doctor);
-//            doctor.getPatients().add(this); // ESPECIALLY THIS LINE
-//        }
-//    }
-
+    private List<Appointment> appointmentsList;
 
     public Patient() {
     }
@@ -49,13 +40,10 @@ public class Patient {
             this.firstName = firstName;
             this.lastName = lastName;
             this.dateOfIshpuz = Ishpuz;
-//        this.doctorList = new ArrayList<Doctor>();
-//        this.appointmentList = new ArrayList<Appoitment>();
             setDepartment(department);
-        }
+        this.appointmentsList = new ArrayList<Appointment>();
 
-
-
+    }
 
     public int getId() {
         return id;
@@ -107,10 +95,14 @@ public class Patient {
     }
 
     public List<Appointment> getAppointments() {
-        return appointments;
+        return appointmentsList;
     }
 
     public void setAppointments(List<Appointment> appointments) {
-        this.appointments = appointments;
+        this.appointmentsList = appointments;
+    }
+    public void addAppointment(LocalDateTime time, String description, Doctor doctor) {
+        Appointment appointment = new Appointment(time, description, doctor, this);
+            appointmentsList.add(appointment);
     }
 }

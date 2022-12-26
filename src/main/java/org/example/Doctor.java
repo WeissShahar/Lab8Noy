@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,29 +38,12 @@ public class Doctor {
     private String email;
 
     private String password;
-//
-//    @ManyToMany(
-//            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-//            targetEntity = Patient.class
-//    )
-//    @JoinTable(
-//            name="patients_doctors",
-//
-//            joinColumns = @JoinColumn(name = "patient_id"),
-//            inverseJoinColumns = @JoinColumn(name = "doctor_id")
-//    )
-//    private List<Patient> patients;
+
+    private byte[] salt;
 
     @OneToMany(mappedBy = "doctor")
-    private List<Appointment> appointments;
+    private List<Appointment> appointmentsList;
 
-//    public List<Patient> getPatients() {
-//        return patients;
-//    }
-//
-//    public void setPatients(List<Patient> patients) {
-//        this.patients = patients;
-//    }
 
     public int getId() {
         return id;
@@ -89,23 +77,57 @@ public class Doctor {
         this.email = email;
     }
 
+
+    public static String encryptPassword(String password)
+    {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+
+            byte[] messageDigest = md.digest(password.getBytes());
+
+            BigInteger no = new BigInteger(1, messageDigest);
+
+            String hashtext = no.toString(16);
+
+            while (hashtext.length() < 32) {
+                hashtext = "0" + hashtext;
+            }
+            return hashtext;
+        }
+
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private static byte[] getSalt() throws NoSuchAlgorithmException {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return salt;
+    }
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = encryptPassword(password);
     }
 
-
-    public Doctor(String firstName, String lastName, String email, String password) {
+    public Doctor(String firstName, String lastName, String email, String password) throws NoSuchAlgorithmException {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.password = password;
-//        this.patients = new ArrayList<Patient>();
+        this.salt = getSalt();
+        this.password = encryptPassword(password);
+        this.appointmentsList = new ArrayList<Appointment>();
     }
 
     public Doctor() {
+    }
+
+
+    public void addAppointment(LocalDateTime time, String description, Patient patient) {
+        Appointment appointment = new Appointment(time, description, this, patient);
+        appointmentsList.add(appointment);
     }
 }
